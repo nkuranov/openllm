@@ -1,0 +1,45 @@
+services:
+  # === LLM backend (Ollama) ===
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # --- GPU acceleration ---
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+    # --- Автозагрузка моделей ---
+    entrypoint: >
+      bash -c "
+        ollama serve &
+        sleep 10 &&
+        ollama pull deepseek-r1:32b &&
+        wait
+      "
+
+  # === Веб-интерфейс (Open WebUI) ===
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: openwebui
+    restart: always
+    depends_on:
+      - ollama
+    ports:
+      - "3000:8080"
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - WEBUI_LANG=ru
+    volumes:
+      - openwebui_data:/app/backend/data
+
+volumes:
+  ollama_data:
+  openwebui_data:
