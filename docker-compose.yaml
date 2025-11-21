@@ -19,7 +19,7 @@ services:
       bash -c "
         ollama serve &
         sleep 10 &&
-        ollama pull deepseek-r1:32b &&
+        ollama pull deepseek-r1:14b &&
         wait
       "
 
